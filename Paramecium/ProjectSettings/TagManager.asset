@@ -3,7 +3,14 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - PlayerCharacter
+  - attack hitbox
+  - wall
+  - camera trigger
+  - enemy
+  - genetic code
+  - hazard
   layers:
   - Default
   - TransparentFX
