@@ -5,42 +5,78 @@ using UnityEngine;
 public class FollowPlayerCamera : MonoBehaviour
 {
     [SerializeField] private Transform target;
-    private float cameraZoom;
-    private float zoomFactor = 2f;
+    public float targetZoomSize = 7f, oldZoomSize, isCameraZoom = 0;
     private Collider2D myCameraTrigger;
     private Camera myCamera;
-    private bool isZoom = false;
+
+    public cameraZoomHandler currentCamera;
     
     // Start is called before the first frame update
     void Start()
     {
         myCamera = Camera.main;
-        cameraZoom = myCamera.orthographicSize;
+        oldZoomSize = myCamera.orthographicSize;
         transform.position = new Vector3(0f,0f,-20);
     }
 
+    // Update is called once per frame
     private void Update() {
-        if(isZoom){
-            cameraZoom -= zoomFactor;
-            cameraZoom = Mathf.Clamp(cameraZoom, 4f, 10f);
-            myCamera.orthographicSize = Mathf.Lerp(
-                myCamera.orthographicSize, cameraZoom, Time.deltaTime);
-        }
+
+        // smoothly zooms the camera
+        myCamera.orthographicSize = Mathf.Lerp(myCamera.orthographicSize, targetZoomSize, Time.deltaTime);
 
     }
-    // Update is called once per frame
+
     private void FixedUpdate()
     {
+        // follows the player
         this.transform.position = new Vector3(target.position.x, target.position.y, -20);
     }
 
     private void OnTriggerEnter2D(Collider2D other) {
+        
+        // oldZoomSize = myCamera.orthographicSize;
 
-        // Not doing anything. Need to figure this out.
-        if(other.tag == "camera trigger")
+        // if(other.tag == "cameraSize5")
+        // {
+        //     targetZoomSize = 5f;
+        //     //Mathf.Max(oldZoomSize, 5f);
+        // }            
+        // else if(other.tag == "cameraSize10")
+        // {
+        //     targetZoomSize = 10f;
+        // }       
+        // else if(other.tag == "cameraSize15")
+        // {
+        //     targetZoomSize = 15f;
+        // }
+        // else if(other.tag == "cameraSize20")
+        // {
+        //     targetZoomSize = 20f;
+        // }
+
+        // oldZoomSize = targetZoomSize;
+
+        if(other.GetComponent<cameraZoomHandler>() != null)
         {
-            Debug.Log("Now entering open area");
-            isZoom = true;
+            currentCamera = other.GetComponent<cameraZoomHandler>();
+
+            targetZoomSize = currentCamera.zoomSize;
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D other) {
+        // if(other.tag == "cameraSize5" || other.tag == "cameraSize10" || other.tag == "cameraSize15" || other.tag == "cameraSize20")
+        // {
+        //     targetZoomSize = 5f;
+        // }
+
+        if(other.GetComponent<cameraZoomHandler>() != null)
+        {
+            if(other.GetComponent<cameraZoomHandler>() == currentCamera)
+            {
+                targetZoomSize = 7f;
+            }
         }
     }
 }

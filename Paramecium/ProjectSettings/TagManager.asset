@@ -7,10 +7,13 @@ TagManager:
   - PlayerCharacter
   - attack hitbox
   - wall
-  - camera trigger
   - enemy
   - genetic code
   - hazard
+  - cameraSize5
+  - cameraSize10
+  - cameraSize15
+  - cameraSize20
   layers:
   - Default
   - TransparentFX
