@@ -8,11 +8,16 @@ public class CharacterMovement : MonoBehaviour
     [Header("Character Attributes")]
     [SerializeField] float speed = 2.0f;
     private Rigidbody2D myRb;
-    private float xInput, yInput;
     private float currentSize;
     private float sizeScale = 0.67f;
 
+    public float healthPts = 10f;
+    public Hazard hazard;
+    public Vector2 myInput;
+    public Vector2 knockbackDirection;
+
     private bool canDash = true, isDashing;
+    public bool isHit = false;
     [SerializeField] float dashMagnitude = 20.0f, dashTime = 0.1f;
     private float dashCooldown = 0.25f;
 
@@ -54,23 +59,23 @@ public class CharacterMovement : MonoBehaviour
     void FixedUpdate() 
     {
         //prevent movement while dashing
-        if(isDashing)
+        if(isDashing || isHit)
         {
             return;
         }    
 
         //move the player
-        movePlayer();
+        if(!isHit)
+            movePlayer();
         //rotate the player accordingly
-        if(xInput != 0 || yInput != 0)
+        if(myInput.x != 0 || myInput.y != 0)
             rotatePlayer(); 
         // adjustCamera();
     }
     private void getPlayerInput()
     {
-        xInput = Input.GetAxisRaw("Horizontal");    //get the horizontal keyboard input
-        yInput = Input.GetAxisRaw("Vertical");      //get the vertical keyboard input
-
+        myInput.x = Input.GetAxisRaw("Horizontal");    //get the horizontal keyboard input
+        myInput.y = Input.GetAxisRaw("Vertical");      //get the vertical keyboard input
         // xInput = Input.GetAxisRaw("Mouse X");    //get the horizontal mouse input
         // yInput = Input.GetAxisRaw("Mouse Y");    //get the vertical mouse input        
     }
@@ -90,18 +95,14 @@ public class CharacterMovement : MonoBehaviour
     }
     private void movePlayer()
     {
-        Vector3 VecDirection = new Vector3(xInput, yInput, 0);  //get the direction of movement
+        Vector3 VecDirection = new Vector3(myInput.x, myInput.y, 0);  //get the direction of movement
         myRb.velocity = VecDirection.normalized * speed;    //move accordingly
     }
-    // private void adjustCamera()
-    // {
-    //     float camAngle = Mathf.Atan2(-yInput, -xInput) * Mathf.Rad2Deg;
-    //     playerView.transform.rotation = Quaternion.AngleAxis(camAngle-90, Vector3.forward);
-    // }
     private void rotatePlayer()
     {
-        float angle = Mathf.Atan2(yInput, xInput) * Mathf.Rad2Deg;  //get the angle of rotation based on movement direction
-        transform.rotation = Quaternion.AngleAxis(angle-90, Vector3.forward);   //rotate accordingly
+        float angle = Mathf.Atan2(myInput.y, myInput.x) * Mathf.Rad2Deg;  //get the angle of rotation based on movement direction
+        if(!isHit)
+            transform.rotation = Quaternion.AngleAxis(angle-90, Vector3.forward);   //rotate accordingly
     }
     private IEnumerator dash()
     {
@@ -112,7 +113,7 @@ public class CharacterMovement : MonoBehaviour
         myCollider.size = new Vector2(currentSize * sizeScale, myCollider.size.y);
 
         //dash
-        myRb.velocity = new Vector3(xInput, yInput, 0.0f).normalized * dashMagnitude;
+        myRb.velocity = new Vector3(myInput.x, myInput.y, 0.0f).normalized * dashMagnitude;
 
         //emit trail while dashing for a little bit of time
         myTrail.emitting = true;
@@ -134,13 +135,35 @@ public class CharacterMovement : MonoBehaviour
         if(isDashing == true && other.tag == "enemy")
             Debug.Log("do damage");
 
-        if(other.tag == "hazard")
-            Debug.Log("take damage");
+        if(other.GetComponent<Hazard>() != null)
+        {
+            Debug.Log("take damage");        
+          
+            hazard = other.GetComponent<Hazard>();
+            StartCoroutine(takeDamage());
+        }
 
         if(other.tag == "genetic code")
         {
             Debug.Log("You win!");
             SceneManager.LoadScene("MainMenu");
         }
+    }
+
+    private IEnumerator takeDamage(){
+        
+        isHit = true;  
+        // decrease helth
+        healthPts -= hazard.damage;
+
+        myRb.velocity = new Vector3(-myInput.x, -myInput.y, 0f).normalized * 10f;
+
+        yield return new WaitForSeconds(0.5f);
+
+        //myRb.velocity = Vector3.zero;   
+
+        isHit = false;
+
+        //yield return new WaitForSeconds(1.0f);
     }
 }
