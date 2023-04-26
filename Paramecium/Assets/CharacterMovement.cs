@@ -13,8 +13,9 @@ public class CharacterMovement : MonoBehaviour
 
     public float healthPts = 10f;
     public Hazard hazard;
+    public SpriteRenderer mySr;
+    public AudioSource playerHitSound, lowHealthSound, deathSound;
     public Vector2 myInput;
-    public Vector2 knockbackDirection;
 
     private bool canDash = true, isDashing;
     public bool isHit = false;
@@ -35,11 +36,16 @@ public class CharacterMovement : MonoBehaviour
             child.position = new Vector3(0,0,0);
         }
 
+        mySr = transform.GetChild(0).GetComponent<SpriteRenderer>();
+        playerHitSound = transform.GetChild(1).GetComponent<AudioSource>();
+        lowHealthSound = transform.GetChild(2).GetComponent<AudioSource>();
+        lowHealthSound.volume = 1.2f;
+        deathSound = transform.GetChild(3).GetComponent<AudioSource>();
+
         myRb = GetComponent<Rigidbody2D>();
         myTrail = GetComponent<TrailRenderer>();
         myCollider = GetComponent<CapsuleCollider2D>();
         currentSize = myCollider.size.x;
-        // playerView = GetComponentInParent<Camera>();
     }
     // Update is called once per frame
     void Update()
@@ -75,9 +81,7 @@ public class CharacterMovement : MonoBehaviour
     private void getPlayerInput()
     {
         myInput.x = Input.GetAxisRaw("Horizontal");    //get the horizontal keyboard input
-        myInput.y = Input.GetAxisRaw("Vertical");      //get the vertical keyboard input
-        // xInput = Input.GetAxisRaw("Mouse X");    //get the horizontal mouse input
-        // yInput = Input.GetAxisRaw("Mouse Y");    //get the vertical mouse input        
+        myInput.y = Input.GetAxisRaw("Vertical");      //get the vertical keyboard input     
     }
     private void getDash()
     {
@@ -141,6 +145,15 @@ public class CharacterMovement : MonoBehaviour
           
             hazard = other.GetComponent<Hazard>();
             StartCoroutine(takeDamage());
+
+            if(healthPts > 0)
+                playerHitSound.Play();
+            else{
+                deathSound.Play();
+            }
+
+            if(healthPts == 5f)
+               lowHealthSound.Play();
         }
 
         if(other.tag == "genetic code")
@@ -152,18 +165,18 @@ public class CharacterMovement : MonoBehaviour
 
     private IEnumerator takeDamage(){
         
+        //Stops player input when true. In other words, the player is stunned.
         isHit = true;  
+
         // decrease helth
         healthPts -= hazard.damage;
 
+        //Knockback
         myRb.velocity = new Vector3(-myInput.x, -myInput.y, 0f).normalized * 10f;
 
         yield return new WaitForSeconds(0.5f);
 
-        //myRb.velocity = Vector3.zero;   
-
         isHit = false;
-
-        //yield return new WaitForSeconds(1.0f);
     }
+
 }
