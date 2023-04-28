@@ -8,6 +8,9 @@ public class MainMenuHandler : MonoBehaviour
     private void Update() {
         if(Input.GetKeyDown(KeyCode.Space))
             StartGame();
+
+        if(Input.GetKeyDown(KeyCode.Escape))
+            QuitGame();
     }
     
     /* Start the game in a new scene */
