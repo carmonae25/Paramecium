@@ -14,7 +14,7 @@ public class CharacterMovement : MonoBehaviour
     public float healthPts = 10f;
     public Hazard hazard;
     public SpriteRenderer mySr;
-    public AudioSource playerHitSound, lowHealthSound, deathSound;
+    public AudioSource playerHitSound, lowHealthSound, deathSound, healthUpSound;
     public Vector2 myInput;
 
     private bool canDash = true, isDashing;
@@ -24,8 +24,8 @@ public class CharacterMovement : MonoBehaviour
 
     private TrailRenderer myTrail;
     private CapsuleCollider2D myCollider;
-
-    // private Camera playerView;
+    public static CharacterMovement playerSingleton;
+    public int currentScene;
 
     // Start is called before the first frame update
     void Start()
@@ -36,20 +36,42 @@ public class CharacterMovement : MonoBehaviour
             child.position = new Vector3(0,0,0);
         }
 
+
+
+        if(playerSingleton == null){
+            playerSingleton = this;
+            DontDestroyOnLoad(this.gameObject);            
+        }
+        else{
+            Destroy(this.gameObject);
+        }
+
         mySr = transform.GetChild(0).GetComponent<SpriteRenderer>();
         playerHitSound = transform.GetChild(1).GetComponent<AudioSource>();
         lowHealthSound = transform.GetChild(2).GetComponent<AudioSource>();
         lowHealthSound.volume = 1.2f;
         deathSound = transform.GetChild(3).GetComponent<AudioSource>();
+        healthUpSound = transform.GetChild(4).GetComponent<AudioSource>();
 
         myRb = GetComponent<Rigidbody2D>();
         myTrail = GetComponent<TrailRenderer>();
         myCollider = GetComponent<CapsuleCollider2D>();
         currentSize = myCollider.size.x;
+
+        mySr.enabled = true;
+        healthPts = 10;
+    }
+    private void OnLevelWasLoaded(int level){
+        
+        if(level == 0){
+            Destroy(this.gameObject);
+        }
     }
     // Update is called once per frame
     void Update()
     {   
+        currentScene = SceneManager.GetActiveScene().buildIndex;    //Get current scene build index
+
         if(Input.GetKeyDown(KeyCode.Escape))
             {SceneManager.LoadScene("MainMenu"); }
             
@@ -136,8 +158,6 @@ public class CharacterMovement : MonoBehaviour
     }
 
     private void OnTriggerEnter2D(Collider2D other) {
-        if(isDashing == true && other.tag == "enemy")
-            Debug.Log("do damage");
 
         if(other.GetComponent<Hazard>() != null)
         {
@@ -150,6 +170,9 @@ public class CharacterMovement : MonoBehaviour
                 playerHitSound.Play();
             else{
                 deathSound.Play();
+                mySr.enabled = false;
+                waitABit();
+                SceneManager.LoadScene("MainMenu");
             }
 
             if(healthPts == 5f)
@@ -163,6 +186,12 @@ public class CharacterMovement : MonoBehaviour
         }
     }
 
+    private void waitABit(){
+        float t = 0;
+        while(t < 3f){
+            t += Time.deltaTime;
+        }
+    }
     private IEnumerator takeDamage(){
         
         //Stops player input when true. In other words, the player is stunned.
@@ -178,5 +207,4 @@ public class CharacterMovement : MonoBehaviour
 
         isHit = false;
     }
-
 }

@@ -10,17 +10,32 @@ public class FollowPlayerCamera : MonoBehaviour
     public float targetZoomSize = 7f, oldZoomSize, isCameraZoom = 0;
     private Collider2D myCameraTrigger;
     private Camera myCamera;
+    public static FollowPlayerCamera cameraSingleton;
 
     public cameraZoomHandler currentCamera;
     
     // Start is called before the first frame update
     void Start()
     {
+        if(cameraSingleton == null){
+            cameraSingleton = this;
+            DontDestroyOnLoad(this.gameObject);        
+        }
+        else{
+            Destroy(this.gameObject);
+        }
+        
         myCamera = Camera.main;
         oldZoomSize = myCamera.orthographicSize;
         player = FindObjectOfType<CharacterMovement>();
         transform.position = new Vector3(0f,0f,-20);
         myCamera.transform.position = Vector3.forward;
+    }
+    private void OnLevelWasLoaded(int level){
+        
+        if(level == 0){
+            Destroy(this.gameObject);
+        }
     }
 
     // Update is called once per frame
@@ -29,13 +44,12 @@ public class FollowPlayerCamera : MonoBehaviour
         // smoothly zooms the camera
         myCamera.orthographicSize = Mathf.Lerp(myCamera.orthographicSize, targetZoomSize, Time.deltaTime);
 
-
     }
 
     private void FixedUpdate()
     {
         // follows the player
-        transform.position = new Vector3(player.transform.position.x, player.transform.position.y, -20);
+            transform.position = new Vector3(player.transform.position.x, player.transform.position.y, -20);
 
         if(player.isHit)
             StartCoroutine(shakeCam());       

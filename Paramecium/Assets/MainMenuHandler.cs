@@ -16,7 +16,7 @@ public class MainMenuHandler : MonoBehaviour
     /* Start the game in a new scene */
     public void StartGame()
     {
-        SceneManager.LoadScene("Level 1");
+        SceneManager.LoadScene("Level 1-1");
     }
 
     /*  Quit the application */

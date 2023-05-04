@@ -5,11 +5,28 @@ using UnityEngine.UI;
 
 public class UIMenu : MonoBehaviour
 {
+    public Canvas optionsMenu;
+    public Canvas howToPlay;
+
+    private void Start() {
+        optionsMenu.enabled = false;
+        howToPlay.enabled = false;
+    }
     public void OpenMenu(){
-        GetComponent<Canvas>().enabled = true;
+        optionsMenu.enabled = true;
+        howToPlay.enabled = false;
+    }
+
+    public void OpenHelp(){
+        howToPlay.enabled = true;
+        optionsMenu.enabled = false;
     }
 
     public void CloseMenu(){
-        GetComponent<Canvas>().enabled = false;
+        optionsMenu.enabled = false;
+    }
+
+    public void CloseHelp(){
+        howToPlay.enabled = false;
     }
 }
